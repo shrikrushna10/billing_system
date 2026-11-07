@@ -1,0 +1,9 @@
+{
+  "name": "billing-system",
+  "version": "1.0.0",
+  "description": "Spare Parts & Service Billing System - Rajaram Hodawadekar",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

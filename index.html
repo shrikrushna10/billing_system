@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Billing & Invoicing System - Rajaram Hodawadekar</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- ==========================================================================
+       ADMIN LOGIN & SIGN IN SECURITY GATE (Locked until authentication)
+       ========================================================================== -->
+  <div id="adminAuthOverlay" class="auth-overlay no-print" style="display: flex;">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-brand-badge">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <h2>Admin Security Access</h2>
+        <p>Proprietor: <strong>RAJARAM HODAWADEKAR</strong></p>
+        <div class="auth-sec-pill">🔒 Secure Billing & Accounting System</div>
+      </div>
+
+      <!-- Auth Tabs: Sign In vs Sign Up -->
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab-btn active" id="tabBtnSignIn">Sign In (Login)</button>
+        <button type="button" class="auth-tab-btn" id="tabBtnSignUp">Sign Up / New Admin</button>
+      </div>
+
+      <!-- FORM 1: SIGN IN -->
+      <form id="formSignIn" class="auth-form-content">
+        <div class="form-group">
+          <label for="loginUsername">Admin Username or Phone</label>
+          <input type="text" id="loginUsername" class="form-control" placeholder="1234567890 or rajaram"
+            value="1234567890" required autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <div class="input-password-wrapper">
+            <input type="password" id="loginPassword" class="form-control" placeholder="Enter Admin Password"
+              value="admin" required autocomplete="current-password">
+            <button type="button" class="btn-toggle-pwd" id="btnToggleLoginPwd" title="Show/Hide Password">👁️</button>
+          </div>
+        </div>
+
+        <div class="auth-credentials-hint">
+          <span>💡 <strong>Default Admin Login:</strong></span>
+          <code>Username: <strong>1234567890</strong> | Password: <strong>admin</strong></code>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">
+          🔐 Sign In & Open Billing System
+        </button>
+      </form>
+
+      <!-- FORM 2: SIGN UP / RESET ADMIN -->
+      <form id="formSignUp" class="auth-form-content" style="display: none;">
+        <div class="form-group">
+          <label for="regAdminName">Admin Full Name</label>
+          <input type="text" id="regAdminName" class="form-control" value="RAJARAM HODAWADEKAR" required>
+        </div>
+
+        <div class="form-group">
+          <label for="regAdminPhone">Admin Mobile Phone No</label>
+          <input type="tel" id="regAdminPhone" class="form-control" value="1234567890" required maxlength="10">
+        </div>
+
+        <div class="form-group">
+          <label for="regPassword">Create New Password</label>
+          <input type="password" id="regPassword" class="form-control" placeholder="Choose a secure password" required
+            minlength="4">
+        </div>
+
+        <div class="form-group">
+          <label for="regConfirmPassword">Confirm Password</label>
+          <input type="password" id="regConfirmPassword" class="form-control" placeholder="Re-type password" required
+            minlength="4">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">
+          ✨ Register / Update Admin Credentials
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MAIN BILLING APPLICATION (Visible after Admin Login)
+       ========================================================================== -->
+  <div id="billingAppRoot" style="display: none;">
+
+    <!-- Top App Navigation Bar (Hidden when printing) -->
+    <header class="app-header no-print">
+      <div class="header-container">
+        <div class="header-brand">
+          <div class="brand-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
+          <div>
+            <h1 class="brand-title">Spare Parts & Service Billing</h1>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <!-- Admin Status Indicator -->
+          <div class="admin-badge-indicator" title="Logged in securely">
+            <span class="active-dot"></span>
+            <span class="admin-name-text" id="headerAdminDisplay">RAJARAM HODAWADEKAR</span>
+          </div>
+
+          <button id="btnNewInvoice" class="btn btn-secondary" title="Create a fresh new bill">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 5v14M5 12h14"></path>
+            </svg>
+            New Bill
+          </button>
+
+          <button id="btnSaveInvoice" class="btn btn-secondary" title="Save this bill to local storage">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Save Bill
+          </button>
+
+          <button id="btnHistory" class="btn btn-secondary" title="View past saved invoices">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            History (<span id="historyCount">0</span>)
+          </button>
+
+          <button id="btnSettings" class="btn btn-secondary" title="Configure UPI, Shop details & Phone">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+              </path>
+            </svg>
+            Settings
+          </button>
+
+          <button id="btnPrintInvoice" class="btn btn-primary" title="Print this bill or save as PDF">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            Print / PDF
+          </button>
+
+          <button id="btnQuickWhatsApp" class="btn btn-whatsapp" title="Send bill & payment link directly via WhatsApp">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
+            </svg>
+            Send on WhatsApp
+          </button>
+
+          <!-- Logout Button -->
+          <button id="btnLogout" class="btn btn-logout" title="Lock billing system and logout">
+            🔒 Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Invoice Workspace Container -->
+    <main class="main-container">
+      <div class="invoice-wrapper">
+
+        <!-- INVOICE SHEET (The printable document) -->
+        <section class="invoice-sheet" id="invoiceSheet">
+
+          <!-- TOP HEADER: SHOP INFO & CORNER CONTACT DETAILS -->
+          <div class="invoice-top-header">
+            <div class="shop-branding">
+              <h2 class="shop-title" id="shopNameDisplay">AUTO SPARES & SERVICE CENTRE</h2>
+              <p class="shop-tagline" id="shopTaglineDisplay">Genuine Two-Wheeler & Four-Wheeler Spare Parts • Repairs &
+                Maintenance</p>
+              <p class="shop-address" id="shopAddressDisplay">Near Main Market, Main Road, Maharashtra, India</p>
+            </div>
+
+            <!-- PROMINENT OWNER DETAILS IN CORNER AS REQUIRED -->
+            <div class="corner-owner-box">
+              <div class="owner-badge">PROPRIETOR & CONTACT</div>
+              <div class="owner-name-row">
+                <span class="owner-label">NAME:</span>
+                <span class="owner-value" id="ownerNameDisplay">RAJARAM HODAWADEKAR</span>
+              </div>
+              <div class="owner-phone-row">
+                <span class="owner-label">PHONE NO:</span>
+                <a href="tel:1234567890" class="owner-value phone-highlight" id="ownerPhoneDisplay">1234567890</a>
+              </div>
+              <div class="owner-upi-row">
+                <span class="owner-label">UPI ID:</span>
+                <span class="owner-value upi-text" id="ownerUpiDisplay">1234567890@upi</span>
+                <button type="button" class="btn-quick-edit-upi no-print" id="btnQuickEditUpiCorner"
+                  title="Click to change UPI ID">✏️ Edit</button>
+              </div>
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <!-- INVOICE META & SIMPLIFIED CLIENT DETAILS (ONLY 1. NAME and 2. PHONE NUMBER) -->
+          <div class="invoice-details-grid">
+
+            <!-- Left: Client Details (EXACTLY 2 OPTIONS, FOR INTERNAL RECORD) -->
+            <div class="client-details-card" id="clientDetailsCard">
+              <div class="section-header-row">
+                <div>
+                  <div class="section-title">CLIENT DETAILS <span class="private-badge">INTERNAL RECORD</span></div>
+                  <p class="section-subtext">Saved for your private record • Bill can be shared with anyone</p>
+                </div>
+                <label class="toggle-print-label no-print" title="Uncheck to hide client details on customer printouts">
+                  <input type="checkbox" id="chkShowClientOnPrint" checked>
+                  <span>Print on Bill</span>
+                </label>
+              </div>
+              <div class="form-grid form-grid-two-only" id="clientFieldsContainer">
+                <div class="form-group">
+                  <label for="clientName">1. NAME <span class="opt-label">(For your record)</span></label>
+                  <input type="text" id="clientName" class="form-control" placeholder="Customer Name (optional)"
+                    autocomplete="off">
+                </div>
+                <div class="form-group">
+                  <label for="clientPhone">2. PHONE NUMBER <span class="opt-label">(For your record)</span></label>
+                  <div class="input-with-prefix">
+                    <span class="input-prefix">+91</span>
+                    <input type="tel" id="clientPhone" class="form-control" placeholder="10-digit mobile (optional)"
+                      maxlength="10">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Invoice Metadata -->
+            <div class="meta-details-card">
+              <div class="section-title">INVOICE SPECIFICS</div>
+              <div class="meta-rows">
+                <div class="meta-row">
+                  <span class="meta-label">Invoice No:</span>
+                  <input type="text" id="invoiceNumber" class="meta-input" value="INV-2026-0001">
+                </div>
+                <div class="meta-row">
+                  <span class="meta-label">Bill Date:</span>
+                  <input type="date" id="invoiceDate" class="meta-input">
+                </div>
+                <div class="meta-row meta-row-status">
+                  <span class="meta-label">Payment Status:</span>
+                  <div class="status-action-wrap">
+                    <select id="paymentStatus" class="meta-select">
+                      <option value="Unpaid">⏳ Unpaid / Pending</option>
+                      <option value="Paid">✅ Paid via UPI / Cash</option>
+                      <option value="Partial">⚠️ Partial Paid</option>
+                    </select>
+                    <button type="button" class="btn-quick-paid-toggle no-print" id="btnQuickPaidToggle"
+                      title="Click to immediately mark as PAID and automatically update in saved bills">
+                      ✅ Mark Paid
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- QUICK PRESETS (Helpful for fast spare part insertion, hidden when printing) -->
+          <div class="quick-presets no-print">
+            <span class="presets-title">⚡ Quick Add Spare Parts:</span>
+            <div class="preset-chips">
+              <button type="button" class="preset-btn" data-name="Engine Oil (1 Litre)" data-price="450">+ Engine Oil 1L
+                (₹450)</button>
+              <button type="button" class="preset-btn" data-name="Brake Shoes / Brake Pads" data-price="380">+ Brake
+                Pads (₹380)</button>
+              <button type="button" class="preset-btn" data-name="Spark Plug (NGK / Bosch)" data-price="160">+ Spark
+                Plug (₹160)</button>
+              <button type="button" class="preset-btn" data-name="Air Filter" data-price="250">+ Air Filter
+                (₹250)</button>
+              <button type="button" class="preset-btn" data-name="Oil Filter" data-price="120">+ Oil Filter
+                (₹120)</button>
+              <button type="button" class="preset-btn" data-name="Clutch Cable / Wire" data-price="180">+ Clutch Cable
+                (₹180)</button>
+              <button type="button" class="preset-btn" data-name="Chain Sprocket Kit" data-price="1250">+ Chain Kit
+                (₹1250)</button>
+              <button type="button" class="preset-btn" data-name="General Servicing & Labour Charges" data-price="350">+
+                Labour Charges (₹350)</button>
+            </div>
+          </div>
+
+          <!-- PARTS & ITEMS TABLE -->
+          <div class="table-wrapper">
+            <table class="items-table" id="itemsTable">
+              <thead>
+                <tr>
+                  <th style="width: 5%; text-align: center;">#</th>
+                  <th style="width: 48%;">SPARE PARTS / DESCRIPTION</th>
+                  <th style="width: 14%; text-align: center;">QTY</th>
+                  <th style="width: 16%; text-align: right;">PRICE / RATE (₹)</th>
+                  <th style="width: 17%; text-align: right;">TOTAL (₹)</th>
+                  <th class="no-print" style="width: 5%; text-align: center;">DEL</th>
+                </tr>
+              </thead>
+              <tbody id="itemsTableBody">
+                <!-- Dynamic Rows inserted by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- ADD ROW BUTTON (Hidden when printing) -->
+          <div class="add-row-bar no-print">
+            <button type="button" id="btnAddRow" class="btn btn-add">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Add Spare Part / Item (or press Enter)
+            </button>
+            <span class="hint-text">💡 Tip: Press <strong>Enter</strong> in the price box to automatically create the
+              next row!</span>
+          </div>
+
+          <!-- SUMMARY & PAYMENT SECTION (Side-by-side or stacked on mobile) -->
+          <div class="billing-bottom-grid">
+
+            <!-- LEFT: UPI & MANUAL QR INSERTION SECTION -->
+            <div class="payment-instructions-box">
+              <div class="upi-header">
+                <span class="upi-title">📲 SCAN & PAY WITH ANY UPI APP</span>
+                <span class="upi-sub">Google Pay • PhonePe • Paytm • BHIM • Cred</span>
+              </div>
+
+              <div class="upi-content">
+                <!-- Fixed QR Container Protected with Admin Security -->
+                <div class="qr-container">
+                  <div class="qr-security-badge" title="Permanent payment QR code protected with security lock">
+                    <span class="lock-icon">🔒</span>
+                    <span>FIXED QR CODE</span>
+                  </div>
+
+                  <div class="qr-canvas-box" id="qrDisplayBox">
+                    <!-- Fixed QR Image (Uploaded by admin with ID & Password) -->
+                    <img id="fixedQrImg" src="" alt="Fixed UPI QR"
+                      style="display: none; width: 100%; height: 100%; object-fit: contain;">
+                    <!-- Auto Generated Canvas QR -->
+                    <div id="dynamicQrCanvas" style="display: block;"></div>
+                  </div>
+
+                  <!-- Fixed QR Security Controls -->
+                  <div class="qr-security-controls no-print">
+                    <input type="file" id="fixedQrFileInput" accept="image/*" style="display: none;">
+                    <button type="button" class="btn-lock-action" id="btnManageFixedQr"
+                      title="Admin Security Verification Required to change payment QR">
+                      🔐 Set / Change Fixed QR
+                    </button>
+                  </div>
+
+                  <div class="qr-label" id="qrLabelStatus">Fixed Merchant QR (Scan to Pay)</div>
+                </div>
+
+                <div class="upi-details">
+                  <div class="upi-field">
+                    <span class="upi-label">Payee Name:</span>
+                    <strong id="upiPayeeName">RAJARAM HODAWADEKAR</strong>
+                  </div>
+                  <div class="upi-field">
+                    <span class="upi-label">UPI ID / VPA:</span>
+                    <div style="display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
+                      <code id="upiPayeeVpa" class="vpa-badge">1234567890@upi</code>
+                      <button type="button" class="btn-copy-vpa no-print" id="btnCopyVpa" title="Copy UPI ID">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                      </button>
+                      <button type="button" class="btn-quick-edit-upi no-print" id="btnQuickEditUpiBox"
+                        title="Click to Change UPI ID">
+                        ✏️ Change UPI
+                      </button>
+                    </div>
+                  </div>
+                  <div class="upi-field">
+                    <span class="upi-label">Payable Amount:</span>
+                    <strong class="payable-highlight" id="upiAmountDisplay">₹ 0.00</strong>
+                  </div>
+                  <div class="upi-icons-row">
+                    <span class="upi-badge-tag gpay">GPay</span>
+                    <span class="upi-badge-tag phonepe">PhonePe</span>
+                    <span class="upi-badge-tag paytm">Paytm</span>
+                    <span class="upi-badge-tag bhim">BHIM UPI</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Fast Payment Confirmation / UTR Verification (Auto-updates Saved Bill to PAID) -->
+              <div class="payment-utr-box no-print" id="paymentUtrBox">
+                <div class="utr-box-header">
+                  <div class="utr-box-title">
+                    <span>⚡ Payment Confirmation & Verification</span>
+                    <small>Auto-updates bill status in Saved Records</small>
+                  </div>
+                  <span class="utr-status-badge unpaid" id="utrStatusBadge">⏳ UNPAID</span>
+                </div>
+                <div class="utr-input-row">
+                  <input type="text" id="utrRefInput" class="utr-input"
+                    placeholder="Enter UPI Ref / UTR No (e.g. 412389123456)" maxlength="30">
+                  <button type="button" class="btn-confirm-payment" id="btnConfirmUtrPayment"
+                    title="Verify payment, mark bill as PAID, and auto-update history">
+                    ✅ Confirm Payment & Mark PAID
+                  </button>
+                </div>
+                <div id="utrSuccessBanner" class="utr-success-banner" style="display: none;">
+                  🎉 <strong>Payment Confirmed!</strong> This invoice is now <strong>PAID</strong> and automatically
+                  updated in your saved bills history.
+                </div>
+              </div>
+
+
+
+              <!-- RIGHT: AUTO-CALCULATED TOTALS -->
+              <div class="totals-calculation-box">
+                <div class="calculation-row">
+                  <span class="calc-label">Subtotal:</span>
+                  <span class="calc-value" id="subtotalDisplay">₹ 0.00</span>
+                </div>
+
+                <div class="calculation-row">
+                  <div class="calc-label-with-input">
+                    <span>Discount:</span>
+                    <div class="calc-input-group no-print">
+                      <input type="number" id="discountValue" value="0" min="0" class="mini-input">
+                      <select id="discountType" class="mini-select">
+                        <option value="flat">₹ Flat</option>
+                        <option value="percent">%</option>
+                      </select>
+                    </div>
+                  </div>
+                  <span class="calc-value discount-text" id="discountDisplay">- ₹ 0.00</span>
+                </div>
+
+                <div class="calculation-row">
+                  <div class="calc-label-with-input">
+                    <span>GST / Tax:</span>
+                    <div class="calc-input-group no-print">
+                      <select id="gstRate" class="mini-select">
+                        <option value="0">0% (No Tax)</option>
+                        <option value="18">18% GST</option>
+                        <option value="28">28% GST</option>
+                        <option value="5">5% GST</option>
+                        <option value="12">12% GST</option>
+                      </select>
+                    </div>
+                  </div>
+                  <span class="calc-value" id="gstDisplay">+ ₹ 0.00</span>
+                </div>
+
+                <div class="calculation-row round-row">
+                  <span class="calc-label">Round Off:</span>
+                  <span class="calc-value" id="roundOffDisplay">₹ 0.00</span>
+                </div>
+
+                <hr class="calc-divider">
+
+                <!-- GRAND TOTAL -->
+                <div class="calculation-row grand-total-row">
+                  <span class="grand-label">GRAND TOTAL:</span>
+                  <span class="grand-value" id="grandTotalDisplay">₹ 0.00</span>
+                </div>
+
+                <!-- TOTAL IN WORDS -->
+                <div class="amount-in-words-box">
+                  <span class="words-label">Amount in Words:</span>
+                  <span class="words-value" id="amountWordsDisplay">Zero Rupees Only</span>
+                </div>
+
+                <!-- SIGNATURE BOX -->
+                <div class="signature-box">
+                  <div class="sign-line"></div>
+                  <div class="sign-name" id="signOwnerName">RAJARAM HODAWADEKAR</div>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- PRINT FOOTER (Visible only when printed) -->
+            <footer class="invoice-footer-note">
+              <p>Thank you for choosing our services! Contact <strong>Rajaram Hodawadekar</strong> at
+                <strong>1234567890</strong> for inquiries.
+              </p>
+            </footer>
+
+        </section>
+
+        <!-- FLOATING QUICK ACTIONS BAR (On Screen) -->
+        <div class="screen-action-dock no-print">
+          <div class="dock-summary">
+            <span>Items: <strong id="dockItemCount">0</strong></span>
+            <span>•</span>
+            <span>Total: <strong id="dockTotal">₹ 0.00</strong></span>
+            <span>•</span>
+            <span class="dock-status-badge unpaid" id="dockStatusBadge">⏳ Unpaid</span>
+          </div>
+          <div class="dock-buttons">
+            <button type="button" id="btnDockTogglePaid" class="btn btn-dock-paid"
+              title="1-Click Mark as PAID & Auto-Update Saved Bills">
+              ✅ Mark Paid
+            </button>
+            <button id="btnDockWhatsApp" class="btn btn-whatsapp-large" title="Share this bill with anyone on WhatsApp">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
+              </svg>
+              Share Bill on WhatsApp (To Anyone)
+            </button>
+            <button id="btnDockPrint" class="btn btn-primary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+              Print / Save PDF
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- MODAL: FIXED QR SECURITY (ID & PASSWORD REQUIRED) -->
+    <div id="modalQrSecurity" class="modal-overlay no-print" style="display: none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-with-icon">
+            <span class="auth-icon-bubble" style="font-size: 1.5rem;">🔒</span>
+            <div>
+              <h3>Fixed QR Code Security</h3>
+              <p>Admin ID & Password required to set or change permanent payment QR</p>
+            </div>
+          </div>
+          <button type="button" class="btn-close-modal" id="btnCloseQrSecModal">&times;</button>
+        </div>
+
+        <!-- Verification Step 1: ID & Password -->
+        <form id="formVerifyQrAdmin" class="modal-body">
+          <div class="auth-sec-notice">
+            🛡️ <strong>Payment Security:</strong> The payment QR code is fixed. Only the authorized administrator with
+            their Admin ID and Password can modify it to prevent unauthorized account changes.
+          </div>
+
+          <div class="form-group">
+            <label for="secAdminUser">Admin ID / Phone Number</label>
+            <input type="text" id="secAdminUser" class="form-control" placeholder="1234567890" value="1234567890"
+              required autocomplete="username">
+          </div>
+
+          <div class="form-group">
+            <label for="secAdminPass">Admin Password</label>
+            <div class="input-password-wrapper">
+              <input type="password" id="secAdminPass" class="form-control" placeholder="Enter admin password" required
+                autocomplete="current-password">
+              <button type="button" class="btn-toggle-pwd" id="btnToggleSecPass">👁️</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">
+            🔓 Verify ID & Password
+          </button>
+        </form>
+
+        <!-- Verification Step 2: Unlocked Actions (Shown after password verified) -->
+        <div id="qrUnlockedPanel" class="modal-body" style="display: none;">
+          <div class="auth-success-badge">
+            ✅ <strong>Admin Verified:</strong> Rajaram Hodawadekar. You may now manage the permanent Fixed QR code.
+          </div>
+
+          <div class="form-group">
+            <label>Upload Permanent Fixed QR Image (Google Pay / PhonePe / Paytm / Bank QR):</label>
+            <div class="fixed-qr-actions-row">
+              <button type="button" class="btn btn-primary" id="btnChooseFixedQrFile">
+                📁 Select Fixed QR Image (JPG/PNG)
+              </button>
+              <button type="button" class="btn btn-secondary" id="btnRemoveFixedQr">
+                🔄 Reset to Dynamic QR
+              </button>
+            </div>
+            <small class="helper-text">Once uploaded, this QR code stays fixed permanently across all current and future
+              customer bills.</small>
+          </div>
+
+          <div class="form-group" style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.75rem;">
+            <label for="secUpiIdInput">Update Fixed UPI ID / VPA (for GPay / PhonePe / Paytm):</label>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <input type="text" id="secUpiIdInput" class="form-control"
+                placeholder="e.g. 1234567890@upi or yourname@okhdfcbank">
+              <button type="button" class="btn btn-primary" id="btnSaveSecUpiId" style="white-space: nowrap;">
+                Save UPI ID
+              </button>
+            </div>
+            <small class="helper-text">This updates the UPI ID in your WhatsApp payment link and dynamic QR
+              code.</small>
+          </div>
+
+          <div id="fixedQrCurrentPreviewBox"
+            style="text-align: center; padding: 10px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px;">
+            <span style="font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 5px;">Current Fixed QR
+              Preview:</span>
+            <img id="secPreviewImg" src="" alt="Fixed QR Preview"
+              style="max-width: 140px; max-height: 140px; display: none; margin: 0 auto; border: 1px solid #94a3b8; border-radius: 4px;">
+            <span id="secNoImgText" style="font-size: 0.8rem; color: #94a3b8;">No fixed image uploaded (currently using
+              auto dynamic UPI QR)</span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCloseQrSecBottom">Close & Lock</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: WHATSAPP MESSAGE PREVIEW & SEND -->
+    <div id="modalWhatsApp" class="modal-overlay no-print" style="display: none;">
+      <div class="modal-card modal-lg">
+        <div class="modal-header">
+          <div class="modal-title-with-icon">
+            <span class="wa-icon-bubble">💬</span>
+            <div>
+              <h3>Share Invoice on WhatsApp</h3>
+              <p>Share with <strong>anyone, any contact, or group</strong> with instant 1-tap UPI payment</p>
+            </div>
+          </div>
+          <button type="button" class="btn-close-modal" id="btnCloseWaModal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="waRecipientPhone">Direct Customer Mobile (Optional - Leave blank to choose ANY contact from
+              WhatsApp):</label>
+            <div class="input-with-prefix">
+              <span class="input-prefix">+91</span>
+              <input type="tel" id="waRecipientPhone" class="form-control" placeholder="Optional 10-digit number">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Attractive WhatsApp Bill Preview (Pre-formatted & ready to send):</label>
+            <textarea id="waMessagePreview" class="message-preview-area" rows="13" readonly></textarea>
+          </div>
+
+          <div class="wa-action-tips">
+            <div class="tip-item">
+              <span class="tip-icon">⚡</span>
+              <span><strong>Click "Share with Anyone":</strong> WhatsApp will open its contact selector so you can send
+                this bill to <strong>any person or group</strong> on your phone or PC!</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-paid" id="btnWaMarkAsPaid"
+            title="Client paid? Click to immediately update this bill to PAID in saved records">
+            ✅ Client Paid? Mark as PAID
+          </button>
+          <button type="button" class="btn btn-secondary" id="btnCopyWaText">
+            📋 Copy Bill Text
+          </button>
+          <button type="button" class="btn btn-secondary" id="btnOpenWhatsAppDirect"
+            title="Send directly to the phone number entered above">
+            📞 Send to Phone No
+          </button>
+          <button type="button" class="btn btn-whatsapp-large" id="btnShareToAnyoneWhatsApp"
+            title="Open WhatsApp contact picker to choose any contact or group">
+            🚀 Share with Anyone on WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: INVOICE HISTORY -->
+    <div id="modalHistory" class="modal-overlay no-print" style="display: none;">
+      <div class="modal-card modal-lg">
+        <div class="modal-header">
+          <div>
+            <h3>Saved Invoices History</h3>
+            <p>Search, view, print, or instantly update bill payment status</p>
+          </div>
+          <button type="button" class="btn-close-modal" id="btnCloseHistoryModal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Status Filter Tabs: All, Unpaid, Paid -->
+          <div class="history-filter-tabs">
+            <button type="button" class="hist-tab-btn active" data-filter="all" id="tabHistAll">
+              All Bills (<span id="countHistAll">0</span>)
+            </button>
+            <button type="button" class="hist-tab-btn unpaid-tab" data-filter="unpaid" id="tabHistUnpaid">
+              ⏳ Unpaid / Pending (<span id="countHistUnpaid">0</span>)
+            </button>
+            <button type="button" class="hist-tab-btn paid-tab" data-filter="paid" id="tabHistPaid">
+              ✅ Paid (<span id="countHistPaid">0</span>)
+            </button>
+          </div>
+
+          <div class="history-search-bar">
+            <input type="text" id="searchHistoryInput" class="form-control"
+              placeholder="🔍 Search by client name, mobile number or invoice no...">
+          </div>
+
+          <div class="history-table-container">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Inv No</th>
+                  <th>Date</th>
+                  <th>Client Name</th>
+                  <th>Phone</th>
+                  <th>Total (₹)</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+            <div id="emptyHistoryMsg" class="empty-state" style="display: none;">
+              No saved bills found. Click "Save Bill" on any invoice to store it here.
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnClearHistory">Clear All History</button>
+          <button type="button" class="btn btn-primary" id="btnCloseHistoryBottom">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: SETTINGS -->
+    <div id="modalSettings" class="modal-overlay no-print" style="display: none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <h3>Business & Payment Settings</h3>
+            <p>Configure Proprietor Name, Phone, and UPI Details</p>
+          </div>
+          <button type="button" class="btn-close-modal" id="btnCloseSettingsModal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="cfgOwnerName">Proprietor / Owner Name (In Corner)</label>
+            <input type="text" id="cfgOwnerName" class="form-control" value="RAJARAM HODAWADEKAR">
+          </div>
+
+          <div class="form-group">
+            <label for="cfgOwnerPhone">Owner Phone Number (In Corner)</label>
+            <input type="tel" id="cfgOwnerPhone" class="form-control" value="1234567890">
+          </div>
+
+          <div class="form-group">
+            <label for="cfgOwnerUpi">UPI ID / VPA for Direct Customer Payments</label>
+            <input type="text" id="cfgOwnerUpi" class="form-control" value="1234567890@upi"
+              placeholder="e.g. 1234567890@upi or yourname@okhdfcbank">
+            <small class="helper-text">This UPI ID is encoded into the WhatsApp payment link for GPay, PhonePe, Paytm,
+              etc.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="cfgShopName">Shop / Business Name</label>
+            <input type="text" id="cfgShopName" class="form-control" value="AUTO SPARES & SERVICE CENTRE">
+          </div>
+
+          <div class="form-group">
+            <label for="cfgShopTagline">Tagline / Services Description</label>
+            <input type="text" id="cfgShopTagline" class="form-control"
+              value="Genuine Two-Wheeler & Four-Wheeler Spare Parts • Repairs & Maintenance">
+          </div>
+
+          <div class="form-group">
+            <label for="cfgShopAddress">Shop Address</label>
+            <input type="text" id="cfgShopAddress" class="form-control"
+              value="Near Main Market, Main Road, Maharashtra, India">
+          </div>
+
+          <div class="form-group">
+            <label for="cfgInvoicePrefix">Invoice Number Prefix</label>
+            <input type="text" id="cfgInvoicePrefix" class="form-control" value="INV-2026-">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnResetSettings">Reset to Defaults</button>
+          <button type="button" class="btn btn-primary" id="btnSaveSettings">Save Settings</button>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- End #billingAppRoot -->
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="toast-container no-print"></div>
+
+  <!-- QR CODE LIBRARY & APP SCRIPTS -->
+  <script src="qrcode.min.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
